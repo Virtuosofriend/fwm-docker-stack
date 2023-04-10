@@ -1,0 +1,62 @@
+version: "3.5"
+
+services:
+  database:
+    image: postgres:13.4-buster
+    container_name: emy-postgres
+    restart: always
+    ports:
+      - '5432:5432'
+    expose:
+      - '5432'
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - ../data/database/:/var/db/data
+    networks:
+      - directus
+
+  cache:
+    container_name: fwm-cache
+    image: redis:6
+    networks:
+      - directus
+
+  directus:
+    image: directus/directus:${DIRECTUS_VERSION}
+    container_name: fwm-directus
+    restart: unless-stopped
+    ports:
+      - 8055:8055
+    volumes:
+      - ../data/cms/uploads:/directus/uploads
+      - ../data/cms/extensions:/directus/extensions
+    depends_on:
+      - database
+    environment:
+      KEY: "255d861b-5ea1-5996-9aa3-922530ec40b1"
+      SECRET: "6116487b-cda1-52c2-b5b5-c8022c45e263"
+
+      ACCESS_TOKEN_TTL: '15m'
+      EXTENSIONS_AUTO_RELOAD: 'true'
+      REFRESH_TOKEN_TTL: '365d'
+
+      DB_CLIENT: 'pg'
+      DB_HOST: 'database'
+      DB_PORT: '5432'
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      CORS_ENABLED: 'true' # this must be configured properly when deployed to production
+      CORS_ORIGIN: 'true' # this must be configured properly when deployed to production
+
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    networks:
+      - directus
+
+networks:
+  directus:
