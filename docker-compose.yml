@@ -2,8 +2,8 @@ version: "3.5"
 
 services:
   database:
-    image: postgres:13.4-buster
-    container_name: emy-postgres
+    image: postgis/postgis:15-3.3
+    container_name: fwm-postgres
     restart: always
     ports:
       - '5432:5432'
@@ -14,6 +14,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DATABASE}
       PGDATA: /var/lib/postgresql/data
+      POSTGRES_MULTIPLE_EXTENSIONS: postgis
     volumes:
       - ../data/database/:/var/db/data
     networks:
