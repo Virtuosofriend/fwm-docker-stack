@@ -59,5 +59,16 @@ services:
     networks:
       - directus
 
+  next-app:
+    container_name: fwm-next-app
+    build:
+      context: ./fwm-app
+      dockerfile: prod.Dockerfile
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - directus
+
 networks:
   directus:
