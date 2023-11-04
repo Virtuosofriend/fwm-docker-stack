@@ -16,7 +16,7 @@ services:
       PGDATA: /var/lib/postgresql/data
       POSTGRES_MULTIPLE_EXTENSIONS: postgis
     volumes:
-      - ../data/database/:/var/db/data
+      - ../data/database/:/var/lib/postgresql/data
     networks:
       - directus
 
