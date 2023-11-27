@@ -75,6 +75,7 @@ services:
   fwm-node:
     image: node:17.7.2-alpine3.15
     container_name: fwm-node
+    restart: always
     hostname: fwm-node
     working_dir: /app
     environment:
