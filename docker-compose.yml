@@ -81,6 +81,7 @@ services:
     environment:
       DIRECTUS_API: ${DIRECTUS_API}
       ACCUWEATHER_KEY: ${ACCUWEATHER_KEY}
+      DIRECTUS_TOKEN: ${DIRECTUS_TOKEN}
     volumes:
       - ../fwm-crawlers:/app
     networks:
