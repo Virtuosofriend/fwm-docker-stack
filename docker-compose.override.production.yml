@@ -1,0 +1,37 @@
+version: "3.5"
+
+services:
+  directus:
+    ports:
+      - 8055:8055
+    environment:
+      VIRTUAL_HOST: "backend.myweathr.com"
+      VIRTUAL_PORT: 8055
+      LETSENCRYPT_HOST: "backend.myweathr.com"
+      LETSENCRYPT_EMAIL: "mitssak@hotmail.com"
+    networks:
+      - directus
+      - nginx-proxy
+
+  next-app:
+    container_name: fwm-next-app
+    build:
+      context: ./fwm-app
+      dockerfile: prod.Dockerfile
+      args:
+        NEXT_PUBLIC_APP_BASE_URL: ${NEXT_PUBLIC_APP_BASE_URL}
+    restart: always
+    environment:
+      VIRTUAL_HOST: "myweathr.com"
+      VIRTUAL_PORT: 3000
+      LETSENCRYPT_HOST: "myweathr.com"
+      LETSENCRYPT_EMAIL: "mitssak@hotmail.com"
+    ports:
+      - 3000:3000
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external:
+      name: nginx-proxy
