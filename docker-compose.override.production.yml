@@ -30,6 +30,22 @@ services:
       - 3000:3000
     networks:
       - nginx-proxy
+  
+  forecastmap-app:
+    container_name: fwm-forecastmap
+    build: ./fwm-forecastmap
+    restart: unless-stopped
+    environment:
+      VIRTUAL_HOST: "forecastmap.myweathr.com"
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: "forecastmap.myweathr.com"
+      LETSENCRYPT_EMAIL: "mitssak@hotmail.com"
+    ports:
+      - 8502:80
+    volumes:
+      - ../fwm-forecastmap/dist:/usr/share/nginx/html
+    networks:
+      - nginx-proxy
 
 networks:
   nginx-proxy:
