@@ -51,42 +51,13 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      CORS_ENABLED: 'true' # this must be configured properly when deployed to production
-      CORS_ORIGIN: 'true' # this must be configured properly when deployed to production
+      CORS_ENABLED: 'true'
+      CORS_ORIGIN: 'true'
 
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     networks:
       - directus
-
-  next-app:
-    container_name: fwm-next-app
-    build:
-      context: ./fwm-app
-      dockerfile: prod.Dockerfile
-      args:
-        NEXT_PUBLIC_APP_BASE_URL: ${NEXT_PUBLIC_APP_BASE_URL}
-    restart: always
-    ports:
-      - 3000:3000
-    networks:
-      - directus
-
-  fwm-node:
-    image: node:17.7.2-alpine3.15
-    container_name: fwm-node
-    restart: always
-    hostname: fwm-node
-    working_dir: /app
-    environment:
-      DIRECTUS_API: ${DIRECTUS_API}
-      ACCUWEATHER_KEY: ${ACCUWEATHER_KEY}
-      DIRECTUS_TOKEN: ${DIRECTUS_TOKEN}
-    volumes:
-      - ../fwm-crawlers:/app
-    networks:
-      - directus
-    command: "/usr/sbin/crond -f -l 0 -c /app/crontab -L /var/log/cron.log"
 
 networks:
   directus:
