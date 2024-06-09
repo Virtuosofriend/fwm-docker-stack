@@ -58,6 +58,25 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     networks:
       - directus
+  
+  node:
+    build:
+      context: ./fwm-crawlers
+      dockerfile: prod.Dockerfile
+      args:
+        EXPRESS_PORT: ${EXPRESS_PORT}
+        DIRECTUS_API: ${DIRECTUS_API}
+        OPENWEATHER_KEY: ${OPENWEATHER_KEY}
+        DIRECTUS_TOKEN: ${DIRECTUS_TOKEN}
+    container_name: fwm-crawlers
+    restart: unless-stopped
+    hostname: fwm-crawlers
+    ports:
+      - ${EXPRESS_PORT}:${EXPRESS_PORT}
+    volumes:
+      - ../fwm-crawlers/:/app/
+    networks:
+      - directus
 
 networks:
   directus:

@@ -46,22 +46,6 @@ services:
       - ../fwm-forecastmap/dist:/usr/share/nginx/html
     networks:
       - nginx-proxy
-  
-  fwm-node:
-    image: node:17.7.2-alpine3.15
-    container_name: fwm-node
-    restart: always
-    hostname: fwm-node
-    working_dir: /app
-    environment:
-      DIRECTUS_API: ${DIRECTUS_API}
-      OPENWEATHER_KEY: ${OPENWEATHER_KEY}
-      DIRECTUS_TOKEN: ${DIRECTUS_TOKEN}
-    volumes:
-      - ../fwm-crawlers:/app
-    networks:
-      - directus
-    command: "/usr/sbin/crond -f -l 0 -c /app/crontab -L /var/log/cron.log"
 
 networks:
   nginx-proxy:
