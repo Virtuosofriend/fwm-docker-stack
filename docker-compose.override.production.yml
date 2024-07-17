@@ -20,6 +20,8 @@ services:
       dockerfile: prod.Dockerfile
       args:
         NEXT_PUBLIC_APP_BASE_URL: ${NEXT_PUBLIC_APP_BASE_URL}
+        NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
     restart: always
     environment:
       VIRTUAL_HOST: "myweathr.com"
