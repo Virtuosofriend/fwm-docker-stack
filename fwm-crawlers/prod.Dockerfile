@@ -1,4 +1,4 @@
-FROM node:17.7.2-alpine3.15
+FROM node:20.16.0-alpine3.20
 
 ARG EXPRESS_PORT
 ARG DIRECTUS_API
