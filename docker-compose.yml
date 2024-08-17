@@ -53,7 +53,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       CORS_ENABLED: 'true'
       CORS_ORIGIN: 'true'
-
+      CACHE_STORE: 'redis'
+      FILES_MAX_UPLOAD_SIZE: '10mb'
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     networks:
