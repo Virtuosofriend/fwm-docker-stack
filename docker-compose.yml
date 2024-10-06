@@ -55,6 +55,7 @@ services:
       CORS_ORIGIN: 'true'
       CACHE_STORE: 'redis'
       FILES_MAX_UPLOAD_SIZE: '10mb'
+      MAX_PAYLOAD_SIZE: '10mb'
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     networks:
