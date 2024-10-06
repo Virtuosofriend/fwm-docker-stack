@@ -13,6 +13,7 @@ services:
       - "/etc/nginx/certs"
       - "/usr/share/nginx/html"
       - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./files/client_max_body_size.conf:/etc/nginx/conf.d/client_max_body_size.conf
     networks:
       - proxy
 
