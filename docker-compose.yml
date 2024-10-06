@@ -69,6 +69,7 @@ services:
         DIRECTUS_API: ${DIRECTUS_API}
         OPENWEATHER_KEY: ${OPENWEATHER_KEY}
         DIRECTUS_TOKEN: ${DIRECTUS_TOKEN}
+        FORECAST_OUTPUT_JSON_FOLDER: ${FORECAST_OUTPUT_JSON_FOLDER}
     container_name: fwm-crawlers
     restart: unless-stopped
     hostname: fwm-crawlers
