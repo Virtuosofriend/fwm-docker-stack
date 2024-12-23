@@ -74,6 +74,8 @@ services:
         OPENWEATHER_KEY: ${OPENWEATHER_KEY}
         DIRECTUS_TOKEN: ${DIRECTUS_TOKEN}
         FORECAST_OUTPUT_JSON_FOLDER: ${FORECAST_OUTPUT_JSON_FOLDER}
+        BSKY_USERNAME: ${BSKY_USERNAME}
+        BSKY_PASSWORD: ${BSKY_PASSWORD}
     container_name: fwm-crawlers
     restart: unless-stopped
     hostname: fwm-crawlers
