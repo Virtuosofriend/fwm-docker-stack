@@ -22,7 +22,7 @@ services:
 
   cache:
     container_name: fwm-cache
-    restart: unless-stopped
+    restart: always
     image: redis:6
     networks:
       - directus
@@ -84,8 +84,28 @@ services:
       - ${EXPRESS_PORT}:${EXPRESS_PORT}
     volumes:
       - ../fwm-crawlers/:/app/
+      - ../data/forecasts/:/app/forecasts/
+    networks:
+      - directus
+    depends_on:
+      - python-service
+
+  python-service:
+    build:
+      context: ./fwm-python
+      dockerfile: prod.Dockerfile
+      args:
+        PYTHON_PORT: ${PYTHON_PORT}
+    container_name: fwm-python-service
+    restart: unless-stopped
+    ports:
+      - ${PYTHON_PORT}:${PYTHON_PORT}
+    volumes:
+      - ../data/forecasts/:/forecasts/
     networks:
       - directus
 
 networks:
   directus:
+    name: directus
+    driver: bridge

@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  dwd_downloader:
+    image: 'deutscherwetterdienst/downloader:latest'
+    container_name: dwd_forecastdownloader
+    command: >
+      sh ./scripts/process_fields.sh  # Running the script inside the container
+    environment:
+      - SINGLE_LEVEL_FIELDS=${SINGLE_LEVEL_FIELDS}
+    volumes:
+      - ../../data/forecasts/:/data
+      - ./scripts/process_fields.sh:/scripts/process_fields.sh
+    user: '${UID}:${GID}'
+    networks:
+      - downloader
+
+networks:
+  downloader:
+    name: downloader
+    driver: bridge
