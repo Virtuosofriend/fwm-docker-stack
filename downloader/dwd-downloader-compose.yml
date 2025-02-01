@@ -1,15 +1,15 @@
 version: '3.8'
 services:
   dwd_downloader:
-    image: 'deutscherwetterdienst/downloader:latest'
+    image: 'virtuosofriend/iconeu-downloader:latest'
     container_name: dwd_forecastdownloader
-    command: >
-      sh ./scripts/process_fields.sh  # Running the script inside the container
     environment:
-      - SINGLE_LEVEL_FIELDS=${SINGLE_LEVEL_FIELDS}
+      - TIMESTAMP=${TIMESTAMP}
+      - PRODUCTS=${SINGLE_LEVEL_FIELDS}
+      - MAX_TIME=${MAX_TIME}
+      - DESTINATION_FOLDER=/data
     volumes:
       - ../../data/forecasts/:/data
-      - ./scripts/process_fields.sh:/scripts/process_fields.sh
     user: '${UID}:${GID}'
     networks:
       - downloader
