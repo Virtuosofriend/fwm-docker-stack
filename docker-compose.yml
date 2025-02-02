@@ -102,6 +102,7 @@ services:
       - ${PYTHON_PORT}:${PYTHON_PORT}
     volumes:
       - ../data/forecasts/:/forecasts/
+    user: '${UID}:${GID}'
     networks:
       - directus
 
