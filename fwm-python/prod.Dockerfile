@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python packages
-RUN pip install --no-cache-dir flask pygrib scipy
+RUN pip install --no-cache-dir flask pygrib scipy joblib gunicorn apscheduler
 
 ARG PYTHON_PORT
 ENV PYTHON_PORT=${PYTHON_PORT}
@@ -25,5 +25,5 @@ COPY . /app
 
 EXPOSE 6000
 
-# Run the application
-CMD ["python3", "app.py"]
+# Run the application with Gunicorn
+CMD ["gunicorn", "--config", "gunicorn.conf.py", "--preload", "app:app"]
