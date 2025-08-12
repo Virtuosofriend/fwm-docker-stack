@@ -7,6 +7,9 @@ from joblib import Memory, Parallel, delayed
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 
+os.environ['JOBLIB_TEMP_FOLDER'] = '/var/tmp/joblib'
+os.makedirs(os.environ['JOBLIB_TEMP_FOLDER'], exist_ok=True)
+
 app = Flask(__name__)
 FORECASTS_DIR = "/forecasts"
 CACHE_DIR = "/tmp/cache"
