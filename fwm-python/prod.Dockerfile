@@ -1,23 +1,28 @@
-FROM python:3.11-slim
+FROM continuumio/miniconda3:24.7.1-0
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    python3-pip \
-    python3-dev \
-    gcc \
-    gfortran \
-    libeccodes0 \
-    libeccodes-dev \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Create environment with pinned versions
+RUN conda create -n myenv -c conda-forge -y \
+    python=3.11 \
+    pygrib=2.1.6 \
+    scipy=1.15.1 \
+    eccodes \
+    joblib=1.4.2 \
+    flask=3.1.0 \
+    gunicorn=23.0.0 \
+    apscheduler=3.11.0 \
+    sqlite \
+    && conda clean -afy
 
-# Install Python packages
-RUN pip install --no-cache-dir flask pygrib scipy joblib gunicorn apscheduler
+# Activate environment
+ENV PATH=/opt/conda/envs/myenv/bin:$PATH
+ENV PROJ_LIB=/opt/conda/envs/myenv/share/proj
+ENV PYTHONUNBUFFERED=1
+ENV JOBLIB_TEMP_FOLDER=/var/tmp/joblib
 
-ARG PYTHON_PORT
-ENV PYTHON_PORT=${PYTHON_PORT}
+# Create joblib temp folder
+RUN mkdir -p /var/tmp/joblib && chmod 777 /var/tmp/joblib
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
 # Copy the app files
@@ -25,5 +30,4 @@ COPY . /app
 
 EXPOSE 6000
 
-# Run the application with Gunicorn
 CMD ["gunicorn", "--config", "gunicorn.conf.py", "--preload", "app:app"]
