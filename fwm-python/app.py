@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import pygrib
 import numpy as np
 import os
+import logging
 from concurrent.futures import ProcessPoolExecutor
 from joblib import Memory, Parallel, delayed
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -73,10 +74,10 @@ def get_grib_files():
     return grib_files
 
 def process_grib(file_data, lat, lon):
-    """ Extracts the nearest value for a given lat/lon from cached GRIB data. """
+    """ Extracts the nearest value for a list of lat/lon pairs from cached GRIB data. """
     try:
         if "error" in file_data:
-            return file_data  # Return the error message if caching failed
+            return [file_data]  # Return the error message if caching failed
 
         shortName = file_data["shortName"]
         forecast_time = file_data["forecast_time"]
@@ -85,40 +86,44 @@ def process_grib(file_data, lat, lon):
         step = file_data["step"]
         values, lats, lons = file_data["values"], file_data["lats"], file_data["lons"]
 
-        # Handle step range for precipitation
-        if shortName == "tp" and "-" in step_range:
-            # start, end = map(int, step_range.split("-"))
-            # step = end - start  # Calculate step dynamically
-
-            # Adjust forecast_time based on step_units
-            if step_units == 0:  # Step is in minutes
-                forecast_time += int(step * 60 * 1000)  # Convert minutes to milliseconds
-            elif step_units == 1:  # Step is in hours
-                forecast_time += int(step * 60 * 60 * 1000)  # Convert hours to milliseconds
+        results = []
+        def get_result(lat, lon):
+            ft = forecast_time
+            st = step
+            # Handle step range for precipitation
+            if shortName == "tp" and "-" in step_range:
+                if step_units == 0:  # Step is in minutes
+                    ft += int(st * 60 * 1000)  # Convert minutes to milliseconds
+                elif step_units == 1:  # Step is in hours
+                    ft += int(st * 60 * 60 * 1000)  # Convert hours to milliseconds
+                else:
+                    raise ValueError(f"Unsupported step_units: {step_units}")
             else:
-                raise ValueError(f"Unsupported step_units: {step_units}")
-        else:
-            step = 60  # Default step (in minutes)
+                st = 60  # Default step (in minutes)
 
-        # Find the nearest grid point
-        distance = np.sqrt((lats - lat) ** 2 + (lons - lon) ** 2)
-        nearest_idx = np.unravel_index(np.argmin(distance), lats.shape)
-        nearest_value = values[nearest_idx]
+            # Find the nearest grid point
+            distance = np.sqrt((lats - lat) ** 2 + (lons - lon) ** 2)
+            nearest_idx = np.unravel_index(np.argmin(distance), lats.shape)
+            nearest_value = values[nearest_idx]
 
-        return {
-            "lat": float(lats[nearest_idx]),
-            "lon": float(lons[nearest_idx]),
-            "value": float(nearest_value),
-            "forecast_time": forecast_time,
-            "range": step_range,
-            "step": step,
-            "step_units": step_units,
-            "shortName": shortName,
-            "file": file_data["file"]
-        }
+            return {
+                "lat": float(lats[nearest_idx]),
+                "lon": float(lons[nearest_idx]),
+                "value": float(nearest_value),
+                "forecast_time": ft,
+                "range": step_range,
+                "step": st,
+                "step_units": step_units,
+                "shortName": shortName,
+                "file": file_data["file"]
+            }
 
+        # latlons is a list of (lat, lon) tuples
+        # This function will be called with latlons as argument
+        # We'll handle that in the endpoint
+        return get_result
     except Exception as e:
-        return {"error": str(e), "file": file_data["file"]}
+        return lambda lat, lon: {"error": str(e), "file": file_data["file"]}
 
 @app.route("/")
 def home():
@@ -126,7 +131,7 @@ def home():
 
 @app.route('/get-grib-data')
 def get_grib_data():
-    """ Processes multiple lat/lon pairs using parallel processing and caching. """
+    """ Processes multiple lat/lon pairs using parallel processing and caching, avoiding nested parallelism. """
     latitudes = request.args.getlist('lat', type=float)
     longitudes = request.args.getlist('lon', type=float)
 
@@ -141,10 +146,14 @@ def get_grib_data():
         # Read GRIB files in parallel and cache the results
         file_data_list = Parallel(n_jobs=CORES_ALLOCATED)(delayed(read_grib_file)(file) for file in grib_files)
 
-        # Process lat/lon pairs in parallel
+        latlons = list(zip(latitudes, longitudes))
+
+        # For each file, process all lat/lon pairs (no inner parallelism)
         results = []
         for file_data in file_data_list:
-            results.extend(Parallel(n_jobs=CORES_ALLOCATED)(delayed(process_grib)(file_data, lat, lon) for lat, lon in zip(latitudes, longitudes)))
+            process_fn = process_grib(file_data, 0, 0)
+            for lat, lon in latlons:
+                results.append(process_fn(lat, lon))
 
         return jsonify({"data": results})
 
@@ -191,8 +200,3 @@ def get_grib_bbox_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
-    pass
-    # port = int(os.getenv("PYTHON_PORT", 6000)) 
-    # app.run(host="0.0.0.0", port=port)
-    # gunicorn -w 4 -b 0.0.0.0:5000 --timeout 120 app:app
