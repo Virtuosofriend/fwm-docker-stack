@@ -1,0 +1,19 @@
+version: "3.5"
+
+services:
+  next-app:
+    container_name: fwm-next-app
+    build:
+      context: ../fwm-app
+      dockerfile: prod.Dockerfile
+      args:
+        NEXT_PUBLIC_APP_BASE_URL: ${NEXT_PUBLIC_APP_BASE_URL}
+        NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
+        NEXT_PUBLIC_FORECAST_JSON_FOLDER: ${NEXT_PUBLIC_FORECAST_JSON_FOLDER}
+        NEXT_PUBLIC_ASSETS_VERSION: ${NEXT_PUBLIC_ASSETS_VERSION}
+    restart: always
+    ports:
+      - 3010:3000
+    networks:
+      - directus

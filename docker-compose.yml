@@ -45,7 +45,6 @@ services:
       ACCESS_TOKEN_TTL: '15m'
       EXTENSIONS_AUTO_RELOAD: 'true'
       REFRESH_TOKEN_TTL: '365d'
-
       DB_CLIENT: 'pg'
       DB_HOST: 'database'
       DB_PORT: '5432'
