@@ -1,4 +1,4 @@
-FROM node:20.16.0-alpine3.20
+FROM node:24.11.0-alpine3.22
 RUN  apk update \
   && apk upgrade \
   && apk add ca-certificates \
