@@ -91,16 +91,15 @@ services:
 
   python-service:
     build:
-      context: ./fwm-python
+      context: ../fwm-python-service
       dockerfile: prod.Dockerfile
-      args:
-        PYTHON_PORT: ${PYTHON_PORT}
     container_name: fwm-python-service
     restart: unless-stopped
     mem_limit: "2g"
     ports:
       - ${PYTHON_PORT}:${PYTHON_PORT}
     volumes:
+      - ../fwm-python-service/app.py:/app/app.py
       - ../data/forecasts/:/forecasts/
     user: '${UID}:${GID}'
     networks:
