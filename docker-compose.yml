@@ -6,9 +6,9 @@ services:
     container_name: fwm-postgres
     restart: always
     ports:
-      - '5432:5432'
+      - "5432:5432"
     expose:
-      - '5432'
+      - "5432"
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -42,28 +42,28 @@ services:
       KEY: "255d861b-5ea1-5996-9aa3-922530ec40b1"
       SECRET: "6116487b-cda1-52c2-b5b5-c8022c45e263"
 
-      ACCESS_TOKEN_TTL: '15m'
-      EXTENSIONS_AUTO_RELOAD: 'true'
-      REFRESH_TOKEN_TTL: '365d'
-      DB_CLIENT: 'pg'
-      DB_HOST: 'database'
-      DB_PORT: '5432'
+      ACCESS_TOKEN_TTL: "15m"
+      EXTENSIONS_AUTO_RELOAD: "true"
+      REFRESH_TOKEN_TTL: "365d"
+      DB_CLIENT: "pg"
+      DB_HOST: "database"
+      DB_PORT: "5432"
       DB_DATABASE: ${DB_DATABASE}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      CORS_ENABLED: 'true'
-      CORS_ORIGIN: 'true'
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "true"
       CACHE_ENABLED: "true"
       CACHE_AUTO_PURGE: "true"
       CACHE_STORE: "redis"
       REDIS: "redis://cache:6379"
-      FILES_MAX_UPLOAD_SIZE: '10mb'
-      MAX_PAYLOAD_SIZE: '10mb'
+      FILES_MAX_UPLOAD_SIZE: "10mb"
+      MAX_PAYLOAD_SIZE: "10mb"
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     networks:
       - directus
-  
+
   node:
     build:
       context: ./fwm-crawlers
@@ -95,13 +95,13 @@ services:
       dockerfile: prod.Dockerfile
     container_name: fwm-python-service
     restart: unless-stopped
-    mem_limit: "2g"
+    mem_limit: "4g"
     ports:
       - ${PYTHON_PORT}:${PYTHON_PORT}
     volumes:
       - ../fwm-python-service/app.py:/app/app.py
       - ../data/forecasts/:/forecasts/
-    user: '${UID}:${GID}'
+    user: "${UID}:${GID}"
     networks:
       - directus
 
