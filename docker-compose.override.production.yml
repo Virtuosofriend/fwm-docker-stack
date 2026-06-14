@@ -24,6 +24,7 @@ services:
         NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
         NEXT_PUBLIC_FORECAST_JSON_FOLDER: ${NEXT_PUBLIC_FORECAST_JSON_FOLDER}
         NEXT_PUBLIC_ASSETS_VERSION: ${NEXT_PUBLIC_ASSETS_VERSION}
+        NEXT_PUBLIC_MAPBOX_TOKEN: ${NEXT_PUBLIC_MAPBOX_TOKEN}
     restart: always
     environment:
       VIRTUAL_HOST: "myweathr.com"
@@ -34,7 +35,7 @@ services:
       - 3000:3000
     networks:
       - nginx-proxy
-  
+
   forecastmap-app:
     container_name: fwm-forecastmap
     build: ./fwm-forecastmap
