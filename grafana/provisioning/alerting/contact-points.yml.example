@@ -1,0 +1,16 @@
+apiVersion: 1
+
+# Copy to contact-points.yml (git-ignored), fill in both values, then uncomment `policies` in notifications.yml.
+# They are written here directly because Grafana turns an environment-variable chat ID into a number
+# and then rejects it.
+contactPoints:
+  - orgId: 1
+    name: Telegram
+    receivers:
+      - uid: fwm-telegram
+        type: telegram
+        settings:
+          bottoken: "<bot token from @BotFather>"
+          chatid: "<chat id>"
+          message: '{{ template "fwm.telegram" . }}'
+        disableResolveMessage: false

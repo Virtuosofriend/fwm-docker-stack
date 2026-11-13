@@ -1,0 +1,26 @@
+apiVersion: 1
+
+# Grafana expands environment variables (dollar sign + name) in provisioning files, so templates in this
+# folder use .Labels / .Values instead of the dollar-prefixed template variables
+templates:
+  - orgId: 1
+    name: fwm-telegram
+    template: |
+      {{ define "fwm.telegram" }}
+      {{- if .Alerts.Firing }}FIRING: {{ .CommonLabels.alertname }} ({{ len .Alerts.Firing }})
+      {{ range .Alerts.Firing }}- {{ .Annotations.summary }}
+      {{ end }}{{ end }}
+      {{- if .Alerts.Resolved }}RESOLVED: {{ .CommonLabels.alertname }} ({{ len .Alerts.Resolved }})
+      {{ range .Alerts.Resolved }}- {{ if .Labels.station }}{{ .Labels.station }}{{ else }}{{ .Labels.station_type }}{{ end }}
+      {{ end }}{{ end }}
+      {{- end }}
+
+# Telegram is off: alerts run and show in Grafana, but nothing is sent.
+# To turn it on, create contact-points.yml (see contact-points.yml.example), then uncomment below.
+# policies:
+#   - orgId: 1
+#     receiver: Telegram
+#     group_by: ["alertname"]
+#     group_wait: 1m
+#     group_interval: 10m
+#     repeat_interval: 12h

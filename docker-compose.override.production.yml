@@ -56,6 +56,18 @@ services:
     networks:
       - nginx-proxy
 
+  grafana:
+    environment:
+      GF_SERVER_ROOT_URL: "https://grafana.myweathr.com"
+      GF_SECURITY_COOKIE_SECURE: "true"
+      VIRTUAL_HOST: "grafana.myweathr.com"
+      VIRTUAL_PORT: 3000
+      LETSENCRYPT_HOST: "grafana.myweathr.com"
+      LETSENCRYPT_EMAIL: "mitssak@hotmail.com"
+    networks:
+      - directus
+      - nginx-proxy
+
 networks:
   nginx-proxy:
     external:

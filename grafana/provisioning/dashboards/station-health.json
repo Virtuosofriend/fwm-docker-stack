@@ -1,0 +1,494 @@
+{
+  "uid": "fwm-station-health",
+  "title": "Station health",
+  "tags": [
+    "fwm"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Stations reporting (last hour)",
+      "description": "Published stations with at least one reading in the last hour, out of all published stations.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fwm-postgres"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fwm-postgres"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT COUNT(*) FILTER (WHERE last.date_created > now() - interval '1 hour') AS \"Reporting\",\n       COUNT(*) AS \"Published\"\nFROM weather_stations s\nJOIN weather_station_types t ON t.id = s.station_type\nLEFT JOIN LATERAL (\n    SELECT d.date_created FROM weather_data d\n    WHERE d.weather_station_id = s.id\n    ORDER BY d.date_created DESC LIMIT 1\n) last ON true\nWHERE s.status = 'published' AND t.status <> 'inactive'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Silent for over 2 hours",
+      "description": "Published stations with no reading for more than 2 hours.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fwm-postgres"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fwm-postgres"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT COUNT(*) AS \"Silent > 2 h\"\nFROM weather_stations s\nJOIN weather_station_types t ON t.id = s.station_type\nLEFT JOIN LATERAL (\n    SELECT d.date_created FROM weather_data d\n    WHERE d.weather_station_id = s.id\n    ORDER BY d.date_created DESC LIMIT 1\n) last ON true\nWHERE s.status = 'published' AND t.status <> 'inactive'\n  AND (last.date_created IS NULL OR last.date_created < now() - interval '2 hours')"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Frozen stations",
+      "description": "Stations whose last 6 readings (3 hours) are identical.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fwm-postgres"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fwm-postgres"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT COUNT(*) AS \"Frozen\" FROM (\nSELECT s.id\nFROM weather_stations s\nJOIN weather_station_types t ON t.id = s.station_type\nCROSS JOIN LATERAL (\n    SELECT d.date_created, d.temperature, d.humidity, d.barometer, d.windspd, d.winddir\n    FROM weather_data d\n    WHERE d.weather_station_id = s.id\n    ORDER BY d.date_created DESC LIMIT 6\n) r\nWHERE s.status = 'published' AND t.status <> 'inactive'\nGROUP BY s.id, s.name, t.label\nHAVING COUNT(*) = 6\n   AND MAX(r.date_created) > now() - interval '3 hours'\n   AND COUNT(DISTINCT (r.temperature, r.humidity, r.barometer, r.windspd, r.winddir)) = 1\n) frozen"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Empty pressure / humidity (24 h)",
+      "description": "Readings in the last 24 hours where pressure or humidity was cleared as impossible.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fwm-postgres"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fwm-postgres"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT COUNT(*) AS \"Readings with empty pressure or humidity\"\nFROM weather_data d\nWHERE d.date_created > now() - interval '24 hours'\n  AND (d.barometer IS NULL OR d.humidity IS NULL)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Readings per hour, by station type",
+      "description": "Expected: 2 readings per hour per station. A type dropping to zero is an outage.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fwm-postgres"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fwm-postgres"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT $__timeGroupAlias(d.date_created, '1h'), t.label AS metric, COUNT(*) AS value\nFROM weather_data d\nJOIN weather_stations s ON s.id = d.weather_station_id\nJOIN weather_station_types t ON t.id = s.station_type\nWHERE $__timeFilter(d.date_created)\nGROUP BY 1, 2\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Last reading per station",
+      "description": "Minutes since each published station last reported. Orange after 1 hour, red after 2.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fwm-postgres"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fwm-postgres"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT s.id AS \"ID\", s.name AS \"Station\", t.label AS \"Type\",\n       last.date_created AS \"Last reading\",\n       ROUND(EXTRACT(EPOCH FROM now() - last.date_created) / 60) AS \"Minutes ago\"\nFROM weather_stations s\nJOIN weather_station_types t ON t.id = s.station_type\nLEFT JOIN LATERAL (\n    SELECT d.date_created FROM weather_data d\n    WHERE d.weather_station_id = s.id\n    ORDER BY d.date_created DESC LIMIT 1\n) last ON true\nWHERE s.status = 'published' AND t.status <> 'inactive'\nORDER BY \"Minutes ago\" DESC NULLS FIRST"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Minutes ago"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 60
+                    },
+                    {
+                      "color": "red",
+                      "value": 120
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Frozen stations (details)",
+      "description": "Stations whose last 6 readings are identical on temperature, humidity, pressure and wind.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fwm-postgres"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fwm-postgres"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT s.id AS \"ID\", s.name AS \"Station\", t.label AS \"Type\",\n       MAX(r.temperature) AS \"Temperature\", MAX(r.humidity) AS \"Humidity\",\n       MAX(r.barometer) AS \"Pressure\", MAX(r.date_created) AS \"Last reading\"\nFROM weather_stations s\nJOIN weather_station_types t ON t.id = s.station_type\nCROSS JOIN LATERAL (\n    SELECT d.date_created, d.temperature, d.humidity, d.barometer, d.windspd, d.winddir\n    FROM weather_data d\n    WHERE d.weather_station_id = s.id\n    ORDER BY d.date_created DESC LIMIT 6\n) r\nWHERE s.status = 'published' AND t.status <> 'inactive'\nGROUP BY s.id, s.name, t.label\nHAVING COUNT(*) = 6\n   AND MAX(r.date_created) > now() - interval '3 hours'\n   AND COUNT(DISTINCT (r.temperature, r.humidity, r.barometer, r.windspd, r.winddir)) = 1\nORDER BY s.id"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Empty pressure / humidity (last 24 h)",
+      "description": "Stations whose pressure or humidity was cleared because it was outside the valid range.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fwm-postgres"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fwm-postgres"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT s.id AS \"ID\", s.name AS \"Station\",\n       COUNT(*) FILTER (WHERE d.barometer IS NULL) AS \"Empty pressure\",\n       COUNT(*) FILTER (WHERE d.humidity IS NULL) AS \"Empty humidity\",\n       COUNT(*) AS \"Readings\"\nFROM weather_data d\nJOIN weather_stations s ON s.id = d.weather_station_id\nWHERE d.date_created > now() - interval '24 hours'\nGROUP BY s.id, s.name\nHAVING COUNT(*) FILTER (WHERE d.barometer IS NULL OR d.humidity IS NULL) > 0\nORDER BY 3 DESC, 4 DESC"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  }
+}

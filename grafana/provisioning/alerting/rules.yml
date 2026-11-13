@@ -1,0 +1,181 @@
+apiVersion: 1
+
+# Each query returns one row per station (or type): text columns become alert labels,
+# the single number column is compared against the threshold.
+groups:
+  - orgId: 1
+    name: Station health
+    folder: FWM
+    interval: 5m
+    rules:
+      - uid: fwm-type-down
+        title: Type down
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 3600, to: 0 }
+            datasourceUid: fwm-postgres
+            model:
+              refId: A
+              editorMode: code
+              rawQuery: true
+              format: table
+              rawSql: |
+                SELECT t.label AS station_type,
+                       COALESCE(EXTRACT(EPOCH FROM now() - MAX(last.date_created)) / 60, 99999) AS minutes_since_last
+                FROM weather_station_types t
+                JOIN weather_stations s ON s.station_type = t.id AND s.status = 'published'
+                LEFT JOIN LATERAL (
+                    SELECT d.date_created FROM weather_data d
+                    WHERE d.weather_station_id = s.id
+                    ORDER BY d.date_created DESC LIMIT 1
+                ) last ON true
+                WHERE t.status <> 'inactive'
+                GROUP BY t.label
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [60] }
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: '{{ .Labels.station_type }}: no reading from any station for {{ printf "%.0f" .Values.A.Value }} min'
+
+      - uid: fwm-station-down
+        title: Station down
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 7200, to: 0 }
+            datasourceUid: fwm-postgres
+            model:
+              refId: A
+              editorMode: code
+              rawQuery: true
+              format: table
+              rawSql: |
+                SELECT s.name || ' (' || s.id || ')' AS station,
+                       t.label AS station_type,
+                       COALESCE(EXTRACT(EPOCH FROM now() - last.date_created) / 60, 99999) AS minutes_since_last
+                FROM weather_stations s
+                JOIN weather_station_types t ON t.id = s.station_type
+                LEFT JOIN LATERAL (
+                    SELECT d.date_created FROM weather_data d
+                    WHERE d.weather_station_id = s.id
+                    ORDER BY d.date_created DESC LIMIT 1
+                ) last ON true
+                WHERE s.status = 'published' AND t.status <> 'inactive'
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [120] }
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: '{{ .Labels.station }} [{{ .Labels.station_type }}]: no reading for {{ printf "%.0f" .Values.A.Value }} min'
+
+      - uid: fwm-frozen
+        title: Frozen station
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 10800, to: 0 }
+            datasourceUid: fwm-postgres
+            model:
+              refId: A
+              editorMode: code
+              rawQuery: true
+              format: table
+              rawSql: |
+                SELECT s.name || ' (' || s.id || ')' AS station,
+                       t.label AS station_type,
+                       CASE WHEN COUNT(*) = 6
+                             AND MAX(r.date_created) > now() - interval '3 hours'
+                             AND COUNT(DISTINCT (r.temperature, r.humidity, r.barometer, r.windspd, r.winddir)) = 1
+                            THEN 1 ELSE 0 END AS frozen
+                FROM weather_stations s
+                JOIN weather_station_types t ON t.id = s.station_type
+                CROSS JOIN LATERAL (
+                    SELECT d.date_created, d.temperature, d.humidity, d.barometer, d.windspd, d.winddir
+                    FROM weather_data d
+                    WHERE d.weather_station_id = s.id
+                    ORDER BY d.date_created DESC LIMIT 6
+                ) r
+                WHERE s.status = 'published' AND t.status <> 'inactive'
+                GROUP BY s.id, s.name, t.label
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: '{{ .Labels.station }} [{{ .Labels.station_type }}]: last 6 readings are identical'
+
+      - uid: fwm-impossible-value
+        title: Impossible value
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 1800, to: 0 }
+            datasourceUid: fwm-postgres
+            model:
+              refId: A
+              editorMode: code
+              rawQuery: true
+              format: table
+              rawSql: |
+                SELECT s.name || ' (' || s.id || ')' AS station,
+                       t.label AS station_type,
+                       COUNT(d.id) FILTER (WHERE
+                              d.temperature IS NULL OR d.temperature NOT BETWEEN -30 AND 50
+                           OR d.windspd IS NULL OR d.windspd NOT BETWEEN 0 AND 200
+                           OR d.winddir IS NULL OR d.winddir NOT BETWEEN 0 AND 360
+                           OR d.percipitation IS NULL OR d.percipitation NOT BETWEEN 0 AND 500
+                           OR d.humidity NOT BETWEEN 1 AND 100
+                           OR d.barometer NOT BETWEEN 800 AND 1100
+                           OR d.rainrate NOT BETWEEN 0 AND 500
+                       ) AS bad_readings
+                FROM weather_stations s
+                JOIN weather_station_types t ON t.id = s.station_type
+                LEFT JOIN weather_data d
+                       ON d.weather_station_id = s.id
+                      AND d.date_created > now() - interval '30 minutes'
+                WHERE s.status = 'published'
+                GROUP BY s.id, s.name, t.label
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: '{{ .Labels.station }} [{{ .Labels.station_type }}]: {{ printf "%.0f" .Values.A.Value }} impossible readings in the last 30 min'

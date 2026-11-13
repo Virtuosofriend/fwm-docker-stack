@@ -28,3 +28,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Grafana Telegram credentials (copy from contact-points.yml.example)
+grafana/provisioning/alerting/contact-points.yml
