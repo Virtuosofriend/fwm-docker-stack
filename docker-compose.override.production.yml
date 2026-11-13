@@ -27,7 +27,9 @@ services:
         NEXT_PUBLIC_MAPBOX_TOKEN: ${NEXT_PUBLIC_MAPBOX_TOKEN}
         CONFIG_REVALIDATE_SECRET: ${CONFIG_REVALIDATE_SECRET}
     restart: always
+    mem_limit: 2560m
     environment:
+      NODE_OPTIONS: "--max-old-space-size=2048"
       VIRTUAL_HOST: "myweathr.com"
       VIRTUAL_PORT: 3000
       LETSENCRYPT_HOST: "myweathr.com"
@@ -41,6 +43,7 @@ services:
     container_name: fwm-forecastmap
     build: ./fwm-forecastmap
     restart: unless-stopped
+    mem_limit: 128m
     environment:
       VIRTUAL_HOST: "forecastmap.myweathr.com"
       VIRTUAL_PORT: 80

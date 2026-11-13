@@ -5,6 +5,13 @@ services:
     image: postgis/postgis:15-3.3
     container_name: fwm-postgres
     restart: always
+    command:
+      - postgres
+      - -c
+      - shared_buffers=1GB
+      - -c
+      - effective_cache_size=3GB
+    shm_size: 256mb
     ports:
       - "5432:5432"
     expose:
@@ -24,6 +31,8 @@ services:
     container_name: fwm-cache
     restart: always
     image: redis:6
+    command: redis-server --maxmemory 200mb --maxmemory-policy allkeys-lru
+    mem_limit: 256m
     networks:
       - directus
 
@@ -31,6 +40,7 @@ services:
     image: directus/directus:${DIRECTUS_VERSION}
     container_name: fwm-directus
     restart: unless-stopped
+    mem_limit: 1g
     ports:
       - 8055:8055
     volumes:
@@ -39,8 +49,8 @@ services:
     depends_on:
       - database
     environment:
-      KEY: "255d861b-5ea1-5996-9aa3-922530ec40b1"
-      SECRET: "6116487b-cda1-52c2-b5b5-c8022c45e263"
+      KEY: ${DIRECTUS_KEY}
+      SECRET: ${DIRECTUS_SECRET}
 
       ACCESS_TOKEN_TTL: "15m"
       EXTENSIONS_AUTO_RELOAD: "true"
@@ -60,6 +70,7 @@ services:
       REDIS: "redis://cache:6379"
       FILES_MAX_UPLOAD_SIZE: "10mb"
       MAX_PAYLOAD_SIZE: "10mb"
+      NODE_OPTIONS: "--max-old-space-size=768"
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     networks:
@@ -80,6 +91,9 @@ services:
     container_name: fwm-crawlers
     restart: unless-stopped
     hostname: fwm-crawlers
+    mem_limit: 768m
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=512"
     ports:
       - ${EXPRESS_PORT}:${EXPRESS_PORT}
     volumes:

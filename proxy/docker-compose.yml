@@ -5,6 +5,7 @@ services:
     image: jwilder/nginx-proxy
     container_name: nginx-proxy
     restart: unless-stopped
+    mem_limit: 256m
     ports:
       - "80:80"
       - "443:443"
@@ -32,6 +33,7 @@ services:
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: letsencrypt
     restart: unless-stopped
+    mem_limit: 128m
     volumes_from:
       - nginx-proxy
     volumes:
