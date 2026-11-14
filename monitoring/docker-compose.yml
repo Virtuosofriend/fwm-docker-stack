@@ -1,0 +1,35 @@
+services:
+  grafana:
+    image: grafana/grafana-oss:${GRAFANA_VERSION}
+    container_name: fwm-grafana
+    restart: unless-stopped
+    mem_limit: 512m
+    volumes:
+      - ../../data/grafana/:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+      GF_SERVER_ROOT_URL: "https://grafana.myweathr.com"
+      GF_SECURITY_COOKIE_SECURE: "true"
+      FWM_DB_NAME: ${DB_DATABASE}
+      FWM_DB_READER_PASSWORD: ${GRAFANA_DB_PASSWORD}
+      VIRTUAL_HOST: "grafana.myweathr.com"
+      VIRTUAL_PORT: 3000
+      LETSENCRYPT_HOST: "grafana.myweathr.com"
+      LETSENCRYPT_EMAIL: "mitssak@hotmail.com"
+    networks:
+      - directus
+      - nginx-proxy
+
+networks:
+  directus:
+    external: true
+  nginx-proxy:
+    external: true

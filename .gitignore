@@ -30,4 +30,5 @@ coverage
 *.sw?
 
 # Grafana Telegram credentials (copy from contact-points.yml.example)
-grafana/provisioning/alerting/contact-points.yml
+# grafana/provisioning/alerting/contact-points.yml
+monitoring/grafana/provisioning/alerting/contact-points.yml
