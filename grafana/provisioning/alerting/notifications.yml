@@ -15,12 +15,10 @@ templates:
       {{ end }}{{ end }}
       {{- end }}
 
-# Telegram is off: alerts run and show in Grafana, but nothing is sent.
-# To turn it on, create contact-points.yml (see contact-points.yml.example), then uncomment below.
-# policies:
-#   - orgId: 1
-#     receiver: Telegram
-#     group_by: ["alertname"]
-#     group_wait: 1m
-#     group_interval: 10m
-#     repeat_interval: 12h
+policies:
+  - orgId: 1
+    receiver: Telegram
+    group_by: ["alertname"]
+    group_wait: 1m
+    group_interval: 10m
+    repeat_interval: 12h
