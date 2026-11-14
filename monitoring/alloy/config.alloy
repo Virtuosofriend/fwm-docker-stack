@@ -1,0 +1,56 @@
+// Ships the stdout of the listed containers to Loki.
+// To collect another container, add its name to the regex below.
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(fwm-crawlers|fwm-next-app)"
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  forward_to = [loki.process.levels.receiver]
+}
+
+// The crawler logs bunyan JSON with numeric levels: turn them into a `level` label
+loki.process "levels" {
+  stage.match {
+    selector = "{container=\"fwm-crawlers\"}"
+
+    stage.json {
+      expressions = { level = "level" }
+    }
+
+    stage.template {
+      source   = "level"
+      template = "{{ if eq .Value \"60\" }}fatal{{ else if eq .Value \"50\" }}error{{ else if eq .Value \"40\" }}warn{{ else if eq .Value \"30\" }}info{{ else if eq .Value \"20\" }}debug{{ end }}"
+    }
+
+    stage.labels {
+      values = { level = "" }
+    }
+  }
+
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

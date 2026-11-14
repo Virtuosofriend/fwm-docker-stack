@@ -27,9 +27,43 @@ services:
     networks:
       - directus
       - nginx-proxy
+      - monitoring
+
+  loki:
+    image: grafana/loki:${LOKI_VERSION}
+    container_name: fwm-loki
+    restart: unless-stopped
+    mem_limit: 512m
+    command: -config.file=/etc/loki/config.yml
+    volumes:
+      - ../../data/loki/:/loki
+      - ./loki/config.yml:/etc/loki/config.yml:ro
+    networks:
+      - monitoring
+
+  alloy:
+    image: grafana/alloy:${ALLOY_VERSION}
+    container_name: fwm-alloy
+    restart: unless-stopped
+    mem_limit: 256m
+    depends_on:
+      - loki
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+      - --disable-reporting
+    volumes:
+      - ../../data/alloy/:/var/lib/alloy/data
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - monitoring
 
 networks:
   directus:
     external: true
   nginx-proxy:
     external: true
+  monitoring:
+    internal: true
