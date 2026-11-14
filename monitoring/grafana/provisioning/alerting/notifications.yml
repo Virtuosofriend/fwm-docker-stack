@@ -11,7 +11,7 @@ templates:
       {{ range .Alerts.Firing }}- {{ .Annotations.summary }}
       {{ end }}{{ end }}
       {{- if .Alerts.Resolved }}RESOLVED: {{ .CommonLabels.alertname }} ({{ len .Alerts.Resolved }})
-      {{ range .Alerts.Resolved }}- {{ if .Labels.station }}{{ .Labels.station }}{{ else }}{{ .Labels.station_type }}{{ end }}
+      {{ range .Alerts.Resolved }}- {{ if .Labels.station }}{{ .Labels.station }}{{ else if .Labels.station_type }}{{ .Labels.station_type }}{{ else if .Labels.name }}{{ .Labels.name }}{{ else if .Labels.mountpoint }}disk {{ .Labels.mountpoint }}{{ else }}server{{ end }}
       {{ end }}{{ end }}
       {{- end }}
 

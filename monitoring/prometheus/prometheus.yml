@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 60s
+  evaluation_interval: 60s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Memory, CPU and network per container
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  # Memory, CPU and disk of the server itself
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
