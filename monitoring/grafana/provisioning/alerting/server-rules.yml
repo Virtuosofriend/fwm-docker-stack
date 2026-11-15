@@ -6,8 +6,6 @@ groups:
     folder: FWM
     interval: 1m
     rules:
-      # 80%, not 90%: Node apps crash when their heap cap is hit (next-app: 2048 of 2560 MB),
-      # before the container reaches 90% of its limit
       - uid: fwm-container-memory
         title: Container memory high
         condition: C
@@ -114,3 +112,36 @@ groups:
           severity: critical
         annotations:
           summary: 'Server memory: only {{ printf "%.0f" .Values.B.Value }}% available (no swap)'
+
+      - uid: fwm-crawler-unreachable
+        title: Crawler unreachable
+        condition: C
+        data:
+          - refId: A
+            queryType: instant
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: fwm-prometheus
+            model:
+              refId: A
+              instant: true
+              range: false
+              editorMode: code
+              expr: up{job="crawlers"}
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "fwm-crawlers: metrics unreachable for 5 min (the crawler is down or restarting)"

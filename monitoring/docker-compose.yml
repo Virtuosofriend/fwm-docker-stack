@@ -75,6 +75,7 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     networks:
       - monitoring
+      - directus
 
   cadvisor:
     image: ghcr.io/google/cadvisor:${CADVISOR_VERSION}
