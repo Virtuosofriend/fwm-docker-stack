@@ -6,7 +6,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": false,
   "refresh": "1m",
   "time": {
@@ -287,198 +287,6 @@
       }
     },
     {
-      "id": 5,
-      "type": "timeseries",
-      "title": "Container memory (% of limit)",
-      "description": "Memory each container uses against its own limit. Containers without a limit (Postgres) are not shown. Alert above 80% for 15 minutes.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "fwm-prometheus"
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 4
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "fwm-prometheus"
-          },
-          "editorMode": "code",
-          "range": true,
-          "expr": "100 * container_memory_working_set_bytes{name=~\".+\"} / (container_spec_memory_limit_bytes{name=~\".+\"} > 0)",
-          "legendFormat": "{{name}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "custom": {
-            "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "spanNulls": true,
-            "thresholdsStyle": {
-              "mode": "dashed"
-            }
-          },
-          "min": 0,
-          "max": 100,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "transparent",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "lastNotNull",
-            "max"
-          ],
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "id": 6,
-      "type": "timeseries",
-      "title": "Container memory",
-      "description": "Memory each container uses. A line that keeps climbing and never drops points to a leak.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "fwm-prometheus"
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 4
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "fwm-prometheus"
-          },
-          "editorMode": "code",
-          "range": true,
-          "expr": "container_memory_working_set_bytes{name=~\".+\"}",
-          "legendFormat": "{{name}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "bytes",
-          "custom": {
-            "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "spanNulls": true
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "lastNotNull",
-            "max"
-          ],
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "id": 7,
-      "type": "timeseries",
-      "title": "Container CPU",
-      "description": "CPU each container uses, in cores (1 = one full core; the server has 4).",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "fwm-prometheus"
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 13
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "fwm-prometheus"
-          },
-          "editorMode": "code",
-          "range": true,
-          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name=~\".+\"}[5m]))",
-          "legendFormat": "{{name}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "custom": {
-            "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "spanNulls": true
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "lastNotNull",
-            "max"
-          ],
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
       "id": 8,
       "type": "timeseries",
       "title": "Server memory and disk",
@@ -488,10 +296,10 @@
         "uid": "fwm-prometheus"
       },
       "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 13
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 4
       },
       "targets": [
         {
@@ -548,6 +356,829 @@
           "sort": "desc"
         }
       }
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "App",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Memory (% of limit)",
+      "description": "Memory each container uses against its own limit. Containers without a limit (Postgres) are not shown. Alert above 80% for 15 minutes.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "fwm-prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "editorMode": "code",
+          "range": true,
+          "expr": "100 * container_memory_working_set_bytes{name=~\"fwm-(next-app|directus|crawlers|postgres|cache|forecastmap)\"} / (container_spec_memory_limit_bytes{name=~\"fwm-(next-app|directus|crawlers|postgres|cache|forecastmap)\"} > 0)",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Memory",
+      "description": "Memory each container uses. A line that keeps climbing and never drops points to a leak.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "fwm-prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 8,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "editorMode": "code",
+          "range": true,
+          "expr": "container_memory_working_set_bytes{name=~\"fwm-(next-app|directus|crawlers|postgres|cache|forecastmap)\"}",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "CPU",
+      "description": "CPU each container uses, in cores (1 = one full core; the server has 4).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "fwm-prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "editorMode": "code",
+          "range": true,
+          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name=~\"fwm-(next-app|directus|crawlers|postgres|cache|forecastmap)\"}[5m]))",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "Proxy",
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "panels": [
+        {
+          "id": 21,
+          "type": "timeseries",
+          "title": "Memory (% of limit)",
+          "description": "Memory each container uses against its own limit. Containers without a limit (Postgres) are not shown. Alert above 80% for 15 minutes.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 23
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fwm-prometheus"
+              },
+              "editorMode": "code",
+              "range": true,
+              "expr": "100 * container_memory_working_set_bytes{name=~\"nginx-proxy|letsencrypt|nginx-gen\"} / (container_spec_memory_limit_bytes{name=~\"nginx-proxy|letsencrypt|nginx-gen\"} > 0)",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "transparent",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 22,
+          "type": "timeseries",
+          "title": "Memory",
+          "description": "Memory each container uses. A line that keeps climbing and never drops points to a leak.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 8,
+            "y": 23
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fwm-prometheus"
+              },
+              "editorMode": "code",
+              "range": true,
+              "expr": "container_memory_working_set_bytes{name=~\"nginx-proxy|letsencrypt|nginx-gen\"}",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 23,
+          "type": "timeseries",
+          "title": "CPU",
+          "description": "CPU each container uses, in cores (1 = one full core; the server has 4).",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 16,
+            "y": 23
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fwm-prometheus"
+              },
+              "editorMode": "code",
+              "range": true,
+              "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name=~\"nginx-proxy|letsencrypt|nginx-gen\"}[5m]))",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "type": "row",
+      "title": "Monitoring",
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "panels": [
+        {
+          "id": 31,
+          "type": "timeseries",
+          "title": "Memory (% of limit)",
+          "description": "Memory each container uses against its own limit. Containers without a limit (Postgres) are not shown. Alert above 80% for 15 minutes.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 24
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fwm-prometheus"
+              },
+              "editorMode": "code",
+              "range": true,
+              "expr": "100 * container_memory_working_set_bytes{name=~\"fwm-(grafana|loki|alloy|prometheus|cadvisor|node-exporter)\"} / (container_spec_memory_limit_bytes{name=~\"fwm-(grafana|loki|alloy|prometheus|cadvisor|node-exporter)\"} > 0)",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "transparent",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 32,
+          "type": "timeseries",
+          "title": "Memory",
+          "description": "Memory each container uses. A line that keeps climbing and never drops points to a leak.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 8,
+            "y": 24
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fwm-prometheus"
+              },
+              "editorMode": "code",
+              "range": true,
+              "expr": "container_memory_working_set_bytes{name=~\"fwm-(grafana|loki|alloy|prometheus|cadvisor|node-exporter)\"}",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 33,
+          "type": "timeseries",
+          "title": "CPU",
+          "description": "CPU each container uses, in cores (1 = one full core; the server has 4).",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 16,
+            "y": 24
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fwm-prometheus"
+              },
+              "editorMode": "code",
+              "range": true,
+              "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name=~\"fwm-(grafana|loki|alloy|prometheus|cadvisor|node-exporter)\"}[5m]))",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "type": "row",
+      "title": "Other (containers not in a group)",
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "panels": [
+        {
+          "id": 41,
+          "type": "timeseries",
+          "title": "Memory (% of limit)",
+          "description": "Memory each container uses against its own limit. Containers without a limit (Postgres) are not shown. Alert above 80% for 15 minutes.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 25
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fwm-prometheus"
+              },
+              "editorMode": "code",
+              "range": true,
+              "expr": "100 * container_memory_working_set_bytes{name=~\".+\", name!~\"(fwm-(next-app|directus|crawlers|postgres|cache|forecastmap))|(nginx-proxy|letsencrypt|nginx-gen)|(fwm-(grafana|loki|alloy|prometheus|cadvisor|node-exporter))\"} / (container_spec_memory_limit_bytes{name=~\".+\", name!~\"(fwm-(next-app|directus|crawlers|postgres|cache|forecastmap))|(nginx-proxy|letsencrypt|nginx-gen)|(fwm-(grafana|loki|alloy|prometheus|cadvisor|node-exporter))\"} > 0)",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "transparent",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 42,
+          "type": "timeseries",
+          "title": "Memory",
+          "description": "Memory each container uses. A line that keeps climbing and never drops points to a leak.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 8,
+            "y": 25
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fwm-prometheus"
+              },
+              "editorMode": "code",
+              "range": true,
+              "expr": "container_memory_working_set_bytes{name=~\".+\", name!~\"(fwm-(next-app|directus|crawlers|postgres|cache|forecastmap))|(nginx-proxy|letsencrypt|nginx-gen)|(fwm-(grafana|loki|alloy|prometheus|cadvisor|node-exporter))\"}",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 43,
+          "type": "timeseries",
+          "title": "CPU",
+          "description": "CPU each container uses, in cores (1 = one full core; the server has 4).",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fwm-prometheus"
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 16,
+            "y": 25
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fwm-prometheus"
+              },
+              "editorMode": "code",
+              "range": true,
+              "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name=~\".+\", name!~\"(fwm-(next-app|directus|crawlers|postgres|cache|forecastmap))|(nginx-proxy|letsencrypt|nginx-gen)|(fwm-(grafana|loki|alloy|prometheus|cadvisor|node-exporter))\"}[5m]))",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        }
+      ]
     }
   ],
   "templating": {
