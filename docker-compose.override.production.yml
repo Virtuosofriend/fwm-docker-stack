@@ -9,6 +9,7 @@ services:
       VIRTUAL_PORT: 8055
       LETSENCRYPT_HOST: "backend.myweathr.com"
       LETSENCRYPT_EMAIL: "mitssak@hotmail.com"
+      PUBLIC_URL: "https://backend.myweathr.com"
     networks:
       - directus
       - nginx-proxy
