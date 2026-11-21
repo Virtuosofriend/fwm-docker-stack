@@ -1,0 +1,13 @@
+services:
+  fwm-backup:
+    build: .
+    container_name: fwm-backup
+    hostname: fwm-backup
+    restart: unless-stopped
+    mem_limit: 256m
+    environment:
+      RESTIC_REPOSITORY: /repo
+      RESTIC_PASSWORD_FILE: /secrets/restic-password
+    volumes:
+      - /home/ubuntu/fwm-backup/repo:/repo
+      - /home/ubuntu/fwm-backup/secrets:/secrets:ro

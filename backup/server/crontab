@@ -1,0 +1,3 @@
+# Times are UTC
+40 2 * * * /app/run.sh backup /app/backup.sh
+15 4 * * 0 /app/run.sh check restic check

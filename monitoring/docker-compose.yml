@@ -106,6 +106,8 @@ services:
     pid: host
     command:
       - --path.rootfs=/host
+      # Backup status written by the backup agent (fwm_backup.prom)
+      - --collector.textfile.directory=/host/var/lib/node_exporter/textfile_collector
     volumes:
       - /:/host:ro,rslave
     networks:

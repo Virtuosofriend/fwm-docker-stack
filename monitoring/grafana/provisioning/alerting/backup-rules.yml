@@ -1,0 +1,75 @@
+apiVersion: 1
+
+# Fed by the backup agent's report (fwm_backup.prom, via node-exporter's textfile collector)
+groups:
+  - orgId: 1
+    name: Backups
+    folder: FWM
+    interval: 5m
+    rules:
+      - uid: fwm-backup-stale
+        title: Backup stale
+        condition: C
+        data:
+          - refId: A
+            queryType: instant
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: fwm-prometheus
+            model:
+              refId: A
+              instant: true
+              range: false
+              editorMode: code
+              expr: (time() - max(fwm_backup_last_success_timestamp_seconds)) / 3600
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [26] }
+        # No metric at all means no backup has ever reported, or node-exporter lost the file
+        noDataState: Alerting
+        execErrState: Error
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Last successful backup was {{ printf "%.0f" .Values.B.Value }} h ago'
+
+      - uid: fwm-backup-disk-low
+        title: Backup disk low
+        condition: C
+        data:
+          - refId: A
+            queryType: instant
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: fwm-prometheus
+            model:
+              refId: A
+              instant: true
+              range: false
+              editorMode: code
+              expr: 100 * min(fwm_backup_disk_free_ratio)
+          - refId: B
+            datasourceUid: __expr__
+            model: { refId: B, type: reduce, expression: A, reducer: last }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: lt, params: [15] }
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Backup server disk: only {{ printf "%.0f" .Values.B.Value }}% free'
